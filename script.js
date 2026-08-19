@@ -15,16 +15,46 @@ let totalElapsed = 0;
 let timerInterval = null;
 let isRunning = false;
 
+let audioContext = null;
+
 function updateDisplay() {
     phaseDisplay.textContent =
         currentPhase === "work" ? "WORK" : "REST";
 
-    timerDisplay.textContent = `0:${String(timeLeft).padStart(2, "0")}`;
+    timerDisplay.textContent =
+        `0:${String(timeLeft).padStart(2, "0")}`;
+}
+
+async function unlockAudio() {
+    if (!audioContext) {
+        audioContext =
+            new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    if (audioContext.state !== "running") {
+        await audioContext.resume();
+    }
+
+    // Play a nearly silent sound during the button press.
+    // This helps unlock audio on iPhone.
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    gainNode.gain.value = 0.001;
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.05);
 }
 
 function playAlarm() {
-    const audioContext =
-        new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioContext) return;
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -35,14 +65,16 @@ function playAlarm() {
     oscillator.frequency.value = 900;
     oscillator.type = "sine";
 
-    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(
+        0.7,
+        audioContext.currentTime
+    );
 
     oscillator.start();
 
-    setTimeout(() => {
-        oscillator.stop();
-        audioContext.close();
-    }, 500);
+    oscillator.stop(
+        audioContext.currentTime + 0.6
+    );
 
     if ("vibrate" in navigator) {
         navigator.vibrate([200, 100, 200]);
@@ -80,8 +112,10 @@ function tick() {
     }
 }
 
-function startTimer() {
+async function startTimer() {
     if (isRunning) return;
+
+    await unlockAudio();
 
     isRunning = true;
 
@@ -117,5 +151,15 @@ function finishWorkout() {
 startButton.addEventListener("click", startTimer);
 pauseButton.addEventListener("click", pauseTimer);
 resetButton.addEventListener("click", resetTimer);
+
+document.addEventListener("visibilitychange", () => {
+    if (
+        document.visibilityState === "visible" &&
+        audioContext &&
+        audioContext.state === "suspended"
+    ) {
+        audioContext.resume();
+    }
+});
 
 resetTimer();
