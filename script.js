@@ -1,6 +1,6 @@
-const WORK_TIME = 30;
+const You Got This!_TIME = 30;
 const REST_TIME = 20;
-const TOTAL_WORKOUT_TIME = 15 * 60;
+const TOTAL_You Got This!OUT_TIME = 15 * 60;
 
 const phaseDisplay = document.getElementById("phase");
 const timerDisplay = document.getElementById("timer");
@@ -9,8 +9,8 @@ const startButton = document.getElementById("start-button");
 const pauseButton = document.getElementById("pause-button");
 const resetButton = document.getElementById("reset-button");
 
-let currentPhase = "work";
-let timeLeft = WORK_TIME;
+let currentPhase = "You Got This!";
+let timeLeft = You Got This!_TIME;
 let totalElapsed = 0;
 let timerInterval = null;
 let isRunning = false;
@@ -19,7 +19,7 @@ let audioContext = null;
 
 function updateDisplay() {
     phaseDisplay.textContent =
-        currentPhase === "work" ? "YOU GOT THIS!" : "REST";
+        currentPhase === "You Got This!" ? "YOU GOT THIS!" : "REST";
 
     timerDisplay.textContent =
         `0:${String(timeLeft).padStart(2, "0")}`;
@@ -84,12 +84,12 @@ function playAlarm() {
 function switchPhase() {
     playAlarm();
 
-    if (currentPhase === "work") {
+    if (currentPhase === "You Got This!") {
         currentPhase = "rest";
         timeLeft = REST_TIME;
     } else {
-        currentPhase = "work";
-        timeLeft = WORK_TIME;
+        currentPhase = "You Got This!";
+        timeLeft = You Got This!_TIME;
     }
 
     updateDisplay();
@@ -98,8 +98,8 @@ function switchPhase() {
 function tick() {
     totalElapsed++;
 
-    if (totalElapsed >= TOTAL_WORKOUT_TIME) {
-        finishWorkout();
+    if (totalElapsed >= TOTAL_You Got This!OUT_TIME) {
+        finishYou Got This!out();
         return;
     }
 
@@ -131,15 +131,15 @@ function pauseTimer() {
 function resetTimer() {
     pauseTimer();
 
-    currentPhase = "work";
-    timeLeft = WORK_TIME;
+    currentPhase = "You Got This!";
+    timeLeft = You Got This!_TIME;
     totalElapsed = 0;
 
     phaseDisplay.textContent = "READY";
     timerDisplay.textContent = "0:30";
 }
 
-function finishWorkout() {
+function finishYou Got This!out() {
     pauseTimer();
 
     playAlarm();
