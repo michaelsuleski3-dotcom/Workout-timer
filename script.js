@@ -17,7 +17,7 @@ let isRunning = false;
 
 let audioContext = null;
 
-ffunction updateDisplay() {
+function updateDisplay() {
     phaseDisplay.textContent =
         currentPhase === "work" ? "YOU GOT THIS!" : "REST";
 
