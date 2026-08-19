@@ -17,9 +17,9 @@ let isRunning = false;
 
 let audioContext = null;
 
-function updateDisplay() {
+ffunction updateDisplay() {
     phaseDisplay.textContent =
-        currentPhase === "work" ? "WORK" : "REST";
+        currentPhase === "work" ? "YOU GOT THIS!" : "REST";
 
     timerDisplay.textContent =
         `0:${String(timeLeft).padStart(2, "0")}`;
