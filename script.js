@@ -112,10 +112,10 @@ function tick() {
     }
 }
 
-async function startTimer() {
+function startTimer() {
     if (isRunning) return;
 
-    await unlockAudio();
+    unlockAudio();
 
     isRunning = true;
 
