@@ -1,6 +1,6 @@
-const You Got This!_TIME = 30;
+const WORK_TIME = 30;
 const REST_TIME = 20;
-const TOTAL_You Got This!OUT_TIME = 15 * 60;
+const TOTAL_WORKOUT_TIME = 15 * 60;
 
 const phaseDisplay = document.getElementById("phase");
 const timerDisplay = document.getElementById("timer");
@@ -9,101 +9,147 @@ const startButton = document.getElementById("start-button");
 const pauseButton = document.getElementById("pause-button");
 const resetButton = document.getElementById("reset-button");
 
-let currentPhase = "You Got This!";
-let timeLeft = You Got This!_TIME;
+let currentPhase = "work";
+let setNumber = 1;
+
+let timeLeft = WORK_TIME;
 let totalElapsed = 0;
+
 let timerInterval = null;
 let isRunning = false;
 
 let audioContext = null;
 
+
+// -------------------------
+// DISPLAY
+// -------------------------
+
 function updateDisplay() {
-    phaseDisplay.textContent =
-        currentPhase === "You Got This!" ? "YOU GOT THIS!" : "REST";
+
+    if (currentPhase === "work") {
+        phaseDisplay.textContent = `YOU GOT THIS! ${setNumber}`;
+    } else {
+        phaseDisplay.textContent = "REST";
+    }
 
     timerDisplay.textContent =
         `0:${String(timeLeft).padStart(2, "0")}`;
 }
 
-async function unlockAudio() {
-    if (!audioContext) {
-        audioContext =
-            new (window.AudioContext || window.webkitAudioContext)();
+
+// -------------------------
+// AUDIO
+// -------------------------
+
+function unlockAudio() {
+
+    try {
+
+        if (!audioContext) {
+            audioContext =
+                new (window.AudioContext ||
+                     window.webkitAudioContext)();
+        }
+
+        if (audioContext.state === "suspended") {
+            audioContext.resume();
+        }
+
+    } catch (error) {
+
+        console.log("Audio unavailable:", error);
+
     }
-
-    if (audioContext.state !== "running") {
-        await audioContext.resume();
-    }
-
-    // Play a nearly silent sound during the button press.
-    // This helps unlock audio on iPhone.
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    gainNode.gain.value = 0.001;
-
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.05);
 }
+
 
 function playAlarm() {
-    if (!audioContext) return;
 
-    if (audioContext.state === "suspended") {
-        audioContext.resume();
-    }
+    try {
 
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+        if (!audioContext) return;
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+        if (audioContext.state === "suspended") {
+            audioContext.resume();
+        }
 
-    oscillator.frequency.value = 900;
-    oscillator.type = "sine";
+        const oscillator =
+            audioContext.createOscillator();
 
-    gainNode.gain.setValueAtTime(
-        0.7,
-        audioContext.currentTime
-    );
+        const gainNode =
+            audioContext.createGain();
 
-    oscillator.start();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
 
-    oscillator.stop(
-        audioContext.currentTime + 0.6
-    );
+        oscillator.frequency.value = 900;
+        oscillator.type = "sine";
 
-    if ("vibrate" in navigator) {
-        navigator.vibrate([200, 100, 200]);
+        gainNode.gain.setValueAtTime(
+            0.7,
+            audioContext.currentTime
+        );
+
+        oscillator.start();
+
+        oscillator.stop(
+            audioContext.currentTime + 0.6
+        );
+
+    } catch (error) {
+
+        console.log("Alarm unavailable:", error);
+
     }
 }
 
+
+// -------------------------
+// CHANGE WORK / REST
+// -------------------------
+
 function switchPhase() {
+
     playAlarm();
 
-    if (currentPhase === "You Got This!") {
+    if (currentPhase === "work") {
+
         currentPhase = "rest";
         timeLeft = REST_TIME;
+
     } else {
-        currentPhase = "You Got This!";
-        timeLeft = You Got This!_TIME;
+
+        currentPhase = "work";
+
+        // Move to next set
+        setNumber++;
+
+        // After 3, go back to 1
+        if (setNumber > 3) {
+            setNumber = 1;
+        }
+
+        timeLeft = WORK_TIME;
     }
 
     updateDisplay();
 }
 
-function tick() {
-    totalElapsed++;
 
-    if (totalElapsed >= TOTAL_You Got This!OUT_TIME) {
-        finishYou Got This!out();
+// -------------------------
+// TIMER
+// -------------------------
+
+function tick() {
+
+    totalElapsed++;
+    timeLeft--;
+
+    if (totalElapsed >= TOTAL_WORKOUT_TIME) {
+        finishWorkout();
         return;
     }
-
-    timeLeft--;
 
     if (timeLeft <= 0) {
         switchPhase();
@@ -112,34 +158,67 @@ function tick() {
     }
 }
 
+
+// -------------------------
+// START
+// -------------------------
+
 function startTimer() {
+
     if (isRunning) return;
 
+    // Audio is separate from the timer.
+    // Timer still runs if audio fails.
     unlockAudio();
 
     isRunning = true;
 
-    timerInterval = setInterval(tick, 1000);
+    updateDisplay();
+
+    timerInterval =
+        setInterval(tick, 1000);
 }
 
+
+// -------------------------
+// PAUSE
+// -------------------------
+
 function pauseTimer() {
+
     clearInterval(timerInterval);
+
     timerInterval = null;
     isRunning = false;
 }
 
+
+// -------------------------
+// RESET
+// -------------------------
+
 function resetTimer() {
+
     pauseTimer();
 
-    currentPhase = "You Got This!";
-    timeLeft = You Got This!_TIME;
+    currentPhase = "work";
+
+    setNumber = 1;
+
+    timeLeft = WORK_TIME;
     totalElapsed = 0;
 
     phaseDisplay.textContent = "READY";
     timerDisplay.textContent = "0:30";
 }
 
-function finishYou Got This!out() {
+
+// -------------------------
+// FINISH
+// -------------------------
+
+function finishWorkout() {
+
     pauseTimer();
 
     playAlarm();
@@ -148,18 +227,24 @@ function finishYou Got This!out() {
     timerDisplay.textContent = "0:00";
 }
 
-startButton.addEventListener("click", startTimer);
-pauseButton.addEventListener("click", pauseTimer);
-resetButton.addEventListener("click", resetTimer);
 
-document.addEventListener("visibilitychange", () => {
-    if (
-        document.visibilityState === "visible" &&
-        audioContext &&
-        audioContext.state === "suspended"
-    ) {
-        audioContext.resume();
-    }
-});
+// -------------------------
+// BUTTONS
+// -------------------------
+
+startButton.addEventListener(
+    "click",
+    startTimer
+);
+
+pauseButton.addEventListener(
+    "click",
+    pauseTimer
+);
+
+resetButton.addEventListener(
+    "click",
+    resetTimer
+);
 
 resetTimer();
