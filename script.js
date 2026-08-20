@@ -2,6 +2,8 @@ const WORK_TIME = 30;
 const REST_TIME = 20;
 const TOTAL_WORKOUT_TIME = 15 * 60;
 
+const ALARM_TIME = 2000; // 2 seconds
+
 const phaseDisplay = document.getElementById("phase");
 const timerDisplay = document.getElementById("timer");
 
@@ -13,8 +15,11 @@ let currentPhase = "work";
 let setNumber = 1;
 let timeLeft = WORK_TIME;
 let totalElapsed = 0;
+
 let timerInterval = null;
+let transitionTimeout = null;
 let isRunning = false;
+let isTransitioning = false;
 
 let audioContext = null;
 
@@ -110,13 +115,10 @@ function playAlarm() {
 
 
 // ------------------------------------
-// SWITCH BETWEEN EXERCISE AND REST
+// PREPARE NEXT PHASE
 // ------------------------------------
 
-function switchPhase() {
-
-    // Sound the alarm
-    playAlarm();
+function prepareNextPhase() {
 
     if (currentPhase === "work") {
 
@@ -127,18 +129,47 @@ function switchPhase() {
 
         currentPhase = "work";
 
-        // Move to the next number
         setNumber++;
 
-        // After 3, return to 1
         if (setNumber > 3) {
             setNumber = 1;
         }
 
         timeLeft = WORK_TIME;
     }
+}
 
-    updateDisplay();
+
+// ------------------------------------
+// ALARM THEN START NEXT TIMER
+// ------------------------------------
+
+function transitionToNextPhase() {
+
+    clearInterval(timerInterval);
+    timerInterval = null;
+
+    isTransitioning = true;
+
+    // Sound alarm first
+    playAlarm();
+
+    transitionTimeout = setTimeout(() => {
+
+        if (!isRunning) return;
+
+        // Now change to the next phase
+        prepareNextPhase();
+
+        updateDisplay();
+
+        isTransitioning = false;
+
+        // Start counting down AFTER the alarm
+        timerInterval =
+            setInterval(tick, 1000);
+
+    }, ALARM_TIME);
 }
 
 
@@ -148,8 +179,8 @@ function switchPhase() {
 
 function tick() {
 
-    totalElapsed++;
     timeLeft--;
+    totalElapsed++;
 
     if (totalElapsed >= TOTAL_WORKOUT_TIME) {
         finishWorkout();
@@ -157,9 +188,15 @@ function tick() {
     }
 
     if (timeLeft <= 0) {
-        switchPhase();
+
+        timerDisplay.textContent = "0:00";
+
+        transitionToNextPhase();
+
     } else {
+
         updateDisplay();
+
     }
 }
 
@@ -172,8 +209,6 @@ function startTimer() {
 
     if (isRunning) return;
 
-    // Unlock sound from the START button.
-    // The timer does NOT wait for audio.
     unlockAudio();
 
     isRunning = true;
@@ -192,9 +227,13 @@ function startTimer() {
 function pauseTimer() {
 
     clearInterval(timerInterval);
+    clearTimeout(transitionTimeout);
 
     timerInterval = null;
+    transitionTimeout = null;
+
     isRunning = false;
+    isTransitioning = false;
 }
 
 
@@ -208,6 +247,7 @@ function resetTimer() {
 
     currentPhase = "work";
     setNumber = 1;
+
     timeLeft = WORK_TIME;
     totalElapsed = 0;
 
@@ -222,9 +262,15 @@ function resetTimer() {
 
 function finishWorkout() {
 
-    pauseTimer();
+    clearInterval(timerInterval);
+    clearTimeout(transitionTimeout);
 
-    // Final alarm
+    timerInterval = null;
+    transitionTimeout = null;
+
+    isRunning = false;
+    isTransitioning = false;
+
     playAlarm();
 
     phaseDisplay.textContent = "DONE";
