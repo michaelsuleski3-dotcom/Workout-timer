@@ -37,6 +37,10 @@ body {
 }
 
 
+/* ------------------------------------
+   PHASE
+   ------------------------------------ */
+
 #phase {
     margin: 0 0 10px;
 
@@ -52,6 +56,10 @@ body {
     letter-spacing: 0.05em;
 }
 
+
+/* ------------------------------------
+   MAIN TIMER
+   ------------------------------------ */
 
 #timer {
     margin-bottom: 30px;
@@ -78,35 +86,34 @@ body {
 
 .time-settings {
     width: 100%;
-    max-width: 520px;
+    max-width: 460px;
 
     display: flex;
     flex-direction: column;
 
-    gap: 12px;
+    gap: 10px;
 
-    margin-bottom: 30px;
+    margin:
+        0
+        auto
+        28px;
 }
 
 
 .time-setting {
-    display: grid;
-
-    grid-template-columns:
-        100px
-        55px
-        100px
-        55px;
+    display: flex;
 
     align-items: center;
     justify-content: center;
 
-    gap: 10px;
+    gap: 12px;
 }
 
 
 .setting-label {
-    font-size: 1.2rem;
+    width: 90px;
+
+    font-size: 1.15rem;
     font-weight: bold;
 
     text-align: right;
@@ -115,31 +122,43 @@ body {
 
 #work-time-display,
 #rest-time-display {
-    font-size: 1.2rem;
+    width: 75px;
+
+    font-size: 1.15rem;
     font-weight: bold;
+
+    text-align: center;
 
     white-space: nowrap;
 }
 
 
 .time-setting button {
-    width: 55px;
-    min-width: 55px;
+    flex:
+        0
+        0
+        52px;
 
-    height: 50px;
-    min-height: 50px;
+    width: 52px;
+    height: 52px;
+
+    min-width: 52px;
+    min-height: 52px;
 
     padding: 0;
 
-    flex: none;
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     border: none;
     border-radius: 12px;
 
     background: #333333;
-    color: white;
+    color: #ffffff;
 
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: bold;
 
     cursor: pointer;
@@ -215,29 +234,40 @@ button:active {
     }
 
 
-    .time-setting {
-        grid-template-columns:
-            78px
-            50px
-            82px
-            50px;
+    .time-settings {
+        max-width: 360px;
 
-        gap: 7px;
+        margin-bottom: 24px;
     }
 
 
-    .setting-label,
+    .time-setting {
+        gap: 8px;
+    }
+
+
+    .setting-label {
+        width: 72px;
+
+        font-size: 1rem;
+    }
+
+
     #work-time-display,
     #rest-time-display {
+        width: 66px;
+
         font-size: 1rem;
     }
 
 
     .time-setting button {
-        width: 50px;
-        min-width: 50px;
+        flex-basis: 48px;
 
+        width: 48px;
         height: 48px;
+
+        min-width: 48px;
         min-height: 48px;
     }
 
