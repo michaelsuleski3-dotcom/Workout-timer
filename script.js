@@ -1,27 +1,78 @@
-const WORK_TIME = 30;
-const REST_TIME = 20;
+let WORK_TIME = 30;
+let REST_TIME = 20;
+
 const TOTAL_WORKOUT_TIME = 15 * 60;
 
-const ALARM_TIME = 2000; // 2 seconds
+const ALARM_TIME = 2000; // 2 seconds — DO NOT CHANGE
 
-const phaseDisplay = document.getElementById("phase");
-const timerDisplay = document.getElementById("timer");
 
-const startButton = document.getElementById("start-button");
-const pauseButton = document.getElementById("pause-button");
-const resetButton = document.getElementById("reset-button");
+const phaseDisplay =
+    document.getElementById("phase");
+
+const timerDisplay =
+    document.getElementById("timer");
+
+const startButton =
+    document.getElementById("start-button");
+
+const pauseButton =
+    document.getElementById("pause-button");
+
+const resetButton =
+    document.getElementById("reset-button");
+
+
+const workMinusButton =
+    document.getElementById("work-minus");
+
+const workPlusButton =
+    document.getElementById("work-plus");
+
+const restMinusButton =
+    document.getElementById("rest-minus");
+
+const restPlusButton =
+    document.getElementById("rest-plus");
+
+const workTimeDisplay =
+    document.getElementById("work-time-display");
+
+const restTimeDisplay =
+    document.getElementById("rest-time-display");
+
 
 let currentPhase = "work";
 let setNumber = 1;
+
 let timeLeft = WORK_TIME;
 let totalElapsed = 0;
 
 let timerInterval = null;
 let transitionTimeout = null;
+
 let isRunning = false;
 let isTransitioning = false;
 
 let audioContext = null;
+
+
+// ------------------------------------
+// FORMAT TIME
+// ------------------------------------
+
+function formatTime(seconds) {
+
+    const minutes =
+        Math.floor(seconds / 60);
+
+    const remainingSeconds =
+        seconds % 60;
+
+    return (
+        `${minutes}:` +
+        String(remainingSeconds).padStart(2, "0")
+    );
+}
 
 
 // ------------------------------------
@@ -31,13 +82,28 @@ let audioContext = null;
 function updateDisplay() {
 
     if (currentPhase === "work") {
-        phaseDisplay.textContent = `YOU GOT THIS! ${setNumber}`;
+
+        phaseDisplay.textContent =
+            `YOU GOT THIS! ${setNumber}`;
+
     } else {
-        phaseDisplay.textContent = "REST";
+
+        phaseDisplay.textContent =
+            "REST";
     }
 
     timerDisplay.textContent =
-        `0:${String(timeLeft).padStart(2, "0")}`;
+        formatTime(timeLeft);
+}
+
+
+function updateSettingDisplays() {
+
+    workTimeDisplay.textContent =
+        `${WORK_TIME} sec`;
+
+    restTimeDisplay.textContent =
+        `${REST_TIME} sec`;
 }
 
 
@@ -50,16 +116,23 @@ function unlockAudio() {
     try {
 
         if (!audioContext) {
+
             audioContext =
-                new (window.AudioContext ||
-                     window.webkitAudioContext)();
+                new (
+                    window.AudioContext ||
+                    window.webkitAudioContext
+                )();
         }
 
-        if (audioContext.state === "suspended") {
+        if (
+            audioContext.state ===
+            "suspended"
+        ) {
             audioContext.resume();
         }
 
     } catch (error) {
+
         console.log("Audio unavailable");
     }
 }
@@ -71,7 +144,8 @@ function playAlarm() {
 
     try {
 
-        const startTime = audioContext.currentTime;
+        const startTime =
+            audioContext.currentTime;
 
         // Four quick beeps over approximately 2 seconds
         for (let i = 0; i < 4; i++) {
@@ -109,8 +183,58 @@ function playAlarm() {
         }
 
     } catch (error) {
+
         console.log("Alarm unavailable");
     }
+}
+
+
+// ------------------------------------
+// CHANGE TIMES
+// ------------------------------------
+
+function changeWorkTime(amount) {
+
+    if (isRunning) return;
+
+    WORK_TIME += amount;
+
+    if (WORK_TIME < 5) {
+        WORK_TIME = 5;
+    }
+
+    if (WORK_TIME > 120) {
+        WORK_TIME = 120;
+    }
+
+    currentPhase = "work";
+    timeLeft = WORK_TIME;
+
+    phaseDisplay.textContent =
+        "READY";
+
+    timerDisplay.textContent =
+        formatTime(WORK_TIME);
+
+    updateSettingDisplays();
+}
+
+
+function changeRestTime(amount) {
+
+    if (isRunning) return;
+
+    REST_TIME += amount;
+
+    if (REST_TIME < 5) {
+        REST_TIME = 5;
+    }
+
+    if (REST_TIME > 120) {
+        REST_TIME = 120;
+    }
+
+    updateSettingDisplays();
 }
 
 
@@ -151,21 +275,18 @@ function transitionToNextPhase() {
 
     isTransitioning = true;
 
-    // Sound alarm first
     playAlarm();
 
     transitionTimeout = setTimeout(() => {
 
         if (!isRunning) return;
 
-        // Now change to the next phase
         prepareNextPhase();
 
         updateDisplay();
 
         isTransitioning = false;
 
-        // Start counting down AFTER the alarm
         timerInterval =
             setInterval(tick, 1000);
 
@@ -183,20 +304,21 @@ function tick() {
     totalElapsed++;
 
     if (totalElapsed >= TOTAL_WORKOUT_TIME) {
+
         finishWorkout();
         return;
     }
 
     if (timeLeft <= 0) {
 
-        timerDisplay.textContent = "0:00";
+        timerDisplay.textContent =
+            "0:00";
 
         transitionToNextPhase();
 
     } else {
 
         updateDisplay();
-
     }
 }
 
@@ -251,8 +373,13 @@ function resetTimer() {
     timeLeft = WORK_TIME;
     totalElapsed = 0;
 
-    phaseDisplay.textContent = "READY";
-    timerDisplay.textContent = "0:30";
+    phaseDisplay.textContent =
+        "READY";
+
+    timerDisplay.textContent =
+        formatTime(WORK_TIME);
+
+    updateSettingDisplays();
 }
 
 
@@ -273,8 +400,11 @@ function finishWorkout() {
 
     playAlarm();
 
-    phaseDisplay.textContent = "DONE";
-    timerDisplay.textContent = "0:00";
+    phaseDisplay.textContent =
+        "DONE";
+
+    timerDisplay.textContent =
+        "0:00";
 }
 
 
@@ -295,6 +425,35 @@ pauseButton.addEventListener(
 resetButton.addEventListener(
     "click",
     resetTimer
+);
+
+
+workMinusButton.addEventListener(
+    "click",
+    () => {
+        changeWorkTime(-5);
+    }
+);
+
+workPlusButton.addEventListener(
+    "click",
+    () => {
+        changeWorkTime(5);
+    }
+);
+
+restMinusButton.addEventListener(
+    "click",
+    () => {
+        changeRestTime(-5);
+    }
+);
+
+restPlusButton.addEventListener(
+    "click",
+    () => {
+        changeRestTime(5);
+    }
 );
 
 
