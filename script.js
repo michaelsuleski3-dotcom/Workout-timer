@@ -146,7 +146,7 @@ function transitionToNextPhase() {
     transitionTimeout = setTimeout(() => {
         if (!isRunning) return;
 
-        // Now change to the next phase
+        // Change to the next phase AFTER the alarm
         prepareNextPhase();
 
         updateDisplay();
